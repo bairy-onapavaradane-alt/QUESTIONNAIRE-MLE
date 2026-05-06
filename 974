@@ -1,0 +1,97 @@
+import React, { useState } from "react";
+
+// Données des parcours
+const parcours = {
+  debutant: "Parcours Débutant : 6 mois avec suivi hebdo, formation de base, stages de 2 semaines, démarches personnelles guidées.",
+  intermediaire: "Parcours Intermédiaire : 6 mois, consolidation autonomie, ateliers emploi, stages de 2 semaines, prospection active.",
+  avance: "Parcours Avancé : 6 mois, projet pro défini, spécialisation métier, 2 stages de 2 semaines, suivi final insertion."
+};
+
+// Fonction simple pour calculer niveau
+const calculNiveau = (reponses) => {
+  let score = 0;
+  if(reponses.logement === "independant") score += 2;
+  if(reponses.sante === "ok") score += 2;
+  if(reponses.compétences >= 7) score += 3;
+  if(reponses.mobilite === "ok") score += 2;
+  
+  if(score <= 3) return "debutant";
+  else if(score <= 7) return "intermediaire";
+  else return "avance";
+};
+
+export default function App() {
+  const [reponses, setReponses] = useState({
+    logement: "",
+    sante: "",
+    compétences: 0,
+    mobilite: ""
+  });
+  const [niveau, setNiveau] = useState("");
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setReponses({...reponses, [name]: value});
+  };
+
+  const handleSubmit = () => {
+    const niveauCalcule = calculNiveau(reponses);
+    setNiveau(niveauCalcule);
+  };
+
+  return (
+    <div style={{padding: "20px", fontFamily: "Arial"}}>
+      <h1>Diagnostic CEJ</h1>
+
+      <div>
+        <label>Logement :</label>
+        <select name="logement" onChange={handleChange}>
+          <option value="">--Choisir--</option>
+          <option value="independant">Indépendant</option>
+          <option value="famille">Chez famille/amis</option>
+          <option value="instable">Instable / Sans logement</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Santé :</label>
+        <select name="sante" onChange={handleChange}>
+          <option value="">--Choisir--</option>
+          <option value="ok">Carte vitale, suivi santé OK</option>
+          <option value="probleme">Problème de santé non suivi</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Compétences (0 à 10) :</label>
+        <input
+          type="number"
+          name="compétences"
+          min="0"
+          max="10"
+          onChange={handleChange}
+        />
+      </div>
+
+      <div>
+        <label>Mobilité :</label>
+        <select name="mobilite" onChange={handleChange}>
+          <option value="">--Choisir--</option>
+          <option value="ok">Déplacements faciles</option>
+          <option value="limité">Déplacements limités</option>
+        </select>
+      </div>
+
+      <button onClick={handleSubmit} style={{marginTop: "10px"}}>
+        Évaluer le niveau
+      </button>
+
+      {niveau && (
+        <div style={{marginTop: "20px", padding: "10px", border: "1px solid #ccc"}}>
+          <h2>Niveau estimé : {niveau.toUpperCase()}</h2>
+          <p>{parcours[niveau]}</p>
+        </div>
+      )}
+    </div>
+  );
+}
