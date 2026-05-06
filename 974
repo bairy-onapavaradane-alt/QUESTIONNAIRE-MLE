@@ -1,97 +1,179 @@
 import React, { useState } from "react";
 
-// Données des parcours
-const parcours = {
-  debutant: "Parcours Débutant : 6 mois avec suivi hebdo, formation de base, stages de 2 semaines, démarches personnelles guidées.",
-  intermediaire: "Parcours Intermédiaire : 6 mois, consolidation autonomie, ateliers emploi, stages de 2 semaines, prospection active.",
-  avance: "Parcours Avancé : 6 mois, projet pro défini, spécialisation métier, 2 stages de 2 semaines, suivi final insertion."
+// Recommandations complètes Mission Locale
+const recommandations = (profil) => {
+  if (profil === "fragile") {
+    return [
+      "PSAD / Obligation de formation",
+      "TAPAJ",
+      "BIP",
+      "Aides financières (FDAJ / FUI)",
+      "Accompagnement santé / psychologique",
+      "Solutions logement (ALT / Maison Relais)"
+    ];
+  }
+
+  if (profil === "intermediaire") {
+    return [
+      "Accompagnement vers l'emploi",
+      "Jeunes et logés",
+      "BIP",
+      "Ateliers emploi / formation",
+      "Mobilité locale et externe"
+    ];
+  }
+
+  return [
+    "Accès direct emploi",
+    "Alternance / formation qualifiante",
+    "Groupement de créateurs",
+    "Logement autonome",
+    "Mise en relation entreprise"
+  ];
 };
 
-// Fonction simple pour calculer niveau
-const calculNiveau = (reponses) => {
+// Calcul du profil
+const calculProfil = (r) => {
   let score = 0;
-  if(reponses.logement === "independant") score += 2;
-  if(reponses.sante === "ok") score += 2;
-  if(reponses.compétences >= 7) score += 3;
-  if(reponses.mobilite === "ok") score += 2;
-  
-  if(score <= 3) return "debutant";
-  else if(score <= 7) return "intermediaire";
-  else return "avance";
+
+  if (r.logement === "stable") score++;
+  if (r.sante === "ok") score++;
+  if (r.mobilite === "ok") score++;
+  if (r.projet === "clair") score += 2;
+  if (r.competences >= 7) score += 2;
+  if (r.finance === "ok") score++;
+
+  if (score <= 3) return "fragile";
+  if (score <= 6) return "intermediaire";
+  return "autonome";
 };
 
 export default function App() {
-  const [reponses, setReponses] = useState({
+  const [step, setStep] = useState(1);
+  const [profil, setProfil] = useState("");
+
+  const [r, setR] = useState({
     logement: "",
     sante: "",
-    compétences: 0,
-    mobilite: ""
+    mobilite: "",
+    projet: "",
+    competences: 0,
+    finance: ""
   });
-  const [niveau, setNiveau] = useState("");
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setReponses({...reponses, [name]: value});
+    setR({ ...r, [name]: value });
   };
 
-  const handleSubmit = () => {
-    const niveauCalcule = calculNiveau(reponses);
-    setNiveau(niveauCalcule);
+  const next = () => setStep(step + 1);
+  const prev = () => setStep(step - 1);
+
+  const submit = () => {
+    const p = calculProfil(r);
+    setProfil(p);
   };
 
   return (
-    <div style={{padding: "20px", fontFamily: "Arial"}}>
-      <h1>Diagnostic CEJ</h1>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="bg-white p-6 rounded-2xl shadow w-full max-w-md">
+        <h1 className="text-xl font-bold text-center mb-4">
+          Diagnostic Jeune - Mission Locale
+        </h1>
 
-      <div>
-        <label>Logement :</label>
-        <select name="logement" onChange={handleChange}>
-          <option value="">--Choisir--</option>
-          <option value="independant">Indépendant</option>
-          <option value="famille">Chez famille/amis</option>
-          <option value="instable">Instable / Sans logement</option>
-        </select>
+        {!profil && (
+          <>
+            {step === 1 && (
+              <div>
+                <p>As-tu un logement stable ?</p>
+                <select name="logement" onChange={handleChange} className="w-full p-2 border rounded">
+                  <option value="">Choisir</option>
+                  <option value="stable">Oui</option>
+                  <option value="instable">Non</option>
+                </select>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div>
+                <p>Ta santé est-elle suivie ?</p>
+                <select name="sante" onChange={handleChange} className="w-full p-2 border rounded">
+                  <option value="">Choisir</option>
+                  <option value="ok">Oui</option>
+                  <option value="non">Non</option>
+                </select>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div>
+                <p>Peux-tu te déplacer facilement ?</p>
+                <select name="mobilite" onChange={handleChange} className="w-full p-2 border rounded">
+                  <option value="">Choisir</option>
+                  <option value="ok">Oui</option>
+                  <option value="non">Non</option>
+                </select>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div>
+                <p>As-tu un projet professionnel ?</p>
+                <select name="projet" onChange={handleChange} className="w-full p-2 border rounded">
+                  <option value="">Choisir</option>
+                  <option value="clair">Oui</option>
+                  <option value="flou">Non</option>
+                </select>
+              </div>
+            )}
+
+            {step === 5 && (
+              <div>
+                <p>Note tes compétences (0-10)</p>
+                <input type="number" name="competences" min="0" max="10" onChange={handleChange} className="w-full p-2 border rounded" />
+              </div>
+            )}
+
+            {step === 6 && (
+              <div>
+                <p>Situation financière stable ?</p>
+                <select name="finance" onChange={handleChange} className="w-full p-2 border rounded">
+                  <option value="">Choisir</option>
+                  <option value="ok">Oui</option>
+                  <option value="non">Non</option>
+                </select>
+              </div>
+            )}
+
+            <div className="flex justify-between mt-6">
+              {step > 1 && (
+                <button onClick={prev} className="px-4 py-2 bg-gray-300 rounded">Retour</button>
+              )}
+
+              {step < 6 ? (
+                <button onClick={next} className="px-4 py-2 bg-blue-500 text-white rounded ml-auto">Suivant</button>
+              ) : (
+                <button onClick={submit} className="px-4 py-2 bg-green-500 text-white rounded ml-auto">Résultat</button>
+              )}
+            </div>
+          </>
+        )}
+
+        {profil && (
+          <div>
+            <h2 className="text-lg font-bold mb-2">
+              Profil : {profil.toUpperCase()}
+            </h2>
+
+            <p className="mb-2">Dispositifs recommandés :</p>
+            <ul className="list-disc pl-5">
+              {recommandations(profil).map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
-
-      <div>
-        <label>Santé :</label>
-        <select name="sante" onChange={handleChange}>
-          <option value="">--Choisir--</option>
-          <option value="ok">Carte vitale, suivi santé OK</option>
-          <option value="probleme">Problème de santé non suivi</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Compétences (0 à 10) :</label>
-        <input
-          type="number"
-          name="compétences"
-          min="0"
-          max="10"
-          onChange={handleChange}
-        />
-      </div>
-
-      <div>
-        <label>Mobilité :</label>
-        <select name="mobilite" onChange={handleChange}>
-          <option value="">--Choisir--</option>
-          <option value="ok">Déplacements faciles</option>
-          <option value="limité">Déplacements limités</option>
-        </select>
-      </div>
-
-      <button onClick={handleSubmit} style={{marginTop: "10px"}}>
-        Évaluer le niveau
-      </button>
-
-      {niveau && (
-        <div style={{marginTop: "20px", padding: "10px", border: "1px solid #ccc"}}>
-          <h2>Niveau estimé : {niveau.toUpperCase()}</h2>
-          <p>{parcours[niveau]}</p>
-        </div>
-      )}
     </div>
   );
 }
